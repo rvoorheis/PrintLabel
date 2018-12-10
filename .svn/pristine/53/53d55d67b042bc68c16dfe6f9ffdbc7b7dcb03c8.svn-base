@@ -1,0 +1,5 @@
+LABEL "e:\ATF\labels\ZPL\ZPLRTC9.lbl", "ZDesigner ZD620-203dpi ZPL"
+PRINTER "ZDesigner ZD620-203dpi ZPL"
+PORT "c:\Output\Output.txt"
+PRINT 1
+QUIT

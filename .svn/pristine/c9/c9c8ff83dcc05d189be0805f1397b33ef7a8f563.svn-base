@@ -1,0 +1,52 @@
+__author__ = 'rvoorheis'
+
+import os
+
+class PrintParameters:
+    """
+    Obtain runtime parameters
+    Currently hard coded.
+        Plan either use command line parameters or read input parameter file
+    """
+    wbInputFileName = "H:\\TestLabel\\input.xlsx"   #Name of input spreadsheet
+    wbOutputFileName = "H:\\TestLabel\\output.xlsx" #Name of output spreadsheet
+    outputport = "C:\\Output\\Output.prn"             #file name port that printer will print to
+    labelfiledirectory = "H:\\ATF\\Labels"          #Directory name containing Label format
+
+    def __init__(self):
+        self.wbInputFileName = "H:\\TestLabel\\input.xlsx"
+        self.wbOutputFileName = "H:\\TestLabel\\output.xlsx"
+        self.outputport = "C:\\Output\\Output.prn"
+        self.labelfiledirectory = "H:\\ATF\\Labels"
+        self.display_parameters
+
+    def display_parameters(self):
+        print ("Input spreadsheet    = " + self.wbInputFileName)
+        print ("Output spreadsheet   = " + self.wbOututFileName)
+        print ("Output port          = " + self.outputport )
+        print ("Label file directory = " + self.labelfiledirectory)
+
+
+    def ArchiveLocation(LabelDirectory, Lang, Appl, Prtr ):
+        try:
+            sPath = os.path.abspath(LabelDirectory)
+            sPath = os.path.dirname(sPath)
+            sPath = sPath.join(sPath, Lang)
+            sPath = os.path.join(sPath, Appl)
+            sPath = os.path.join(sPath, "Archive")
+            if os.path.exists(sPath):
+                pass
+            else:
+                os.mkdir(sPath)
+            sPath = os.path.join(sPath, Prtr)
+            if os.path.exists(sPath):
+                pass
+            else:
+                os.mkdir(sPath)
+            #print (sPath)
+            return sPath
+
+        except Exception as e:
+            print ("PrintParameters.ArchiveLocation - Path Error" + str(e))
+            quit (-3)
+

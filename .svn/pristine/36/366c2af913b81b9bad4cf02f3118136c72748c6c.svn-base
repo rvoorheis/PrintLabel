@@ -1,0 +1,5 @@
+LABEL "H:\ATF\Labels\Ean8+2.lbl", "ZDesigner QLn420 (CPCL)"
+PRINTER "ZDesigner QLn420 (CPCL)"
+PORT "C:\Output\Output.prn"
+PRINT 1
+QUIT

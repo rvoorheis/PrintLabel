@@ -1,0 +1,5 @@
+LABEL "E:\ATF\Labels\ZPL\AIAG_PT2.lbl", "ZDesigner ZD620-203dpi ZPL"
+PRINTER "ZDesigner ZD620-203dpi ZPL"
+PORT "C:\Output\Output.prn"
+PRINT 1
+QUIT
