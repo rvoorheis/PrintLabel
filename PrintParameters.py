@@ -4,22 +4,27 @@ import os
 import sys
 import getopt
 
+
 class PrintParameters:
     """
     Obtain runtime parameters
     """
 #    wbInputFileName = "E:\\PythonTestScripts\\input.xlsx"   #Name of input spreadsheet
-#    outputport = "C:\\Output\\Output.prn"             #file name port that printer will print to
+#
 #    labelfiledirectory = "E:\\ATF\\Labels"          #Directory name containing Label format
+#    iString = "123.234.112.223"
+
 
     wbInputFileName = ""  # Name of input spreadsheet
-    outputport = ""  # file name port that printer will print to
+
     labelfiledirectory = ""  # Directory name containing Label format
+
+    PrinterAddress = ""       # IP address of ZPL printer to be used to generate image
 
     def __init__(self, argv):
 
         try:
-            opts, args = getopt.getopt(sys.argv[1:], 'hi:l:p:d', ['help', 'input=', 'labels=', 'printout=','debug'])
+            opts, args = getopt.getopt(sys.argv[1:], 'hi:l:a:d', ['help', 'input=', 'labels=', 'addr=', 'debug'])
 
         except getopt.GetoptError as e:
             print("GetoptError " + str(e))
@@ -34,12 +39,13 @@ class PrintParameters:
                     if opt in ("-h", "--help"):
                         self.usage()
                         sys.exit()
-                    elif opt in ('-d','--debug'):
+                    elif opt in ('-d', '--debug'):
                         _debug = True
                     elif opt in ("-i", "--input"):
                         self.wbInputFileName = arg
-                    elif opt in ("-p", "--printout"):
-                        self.outputport = arg
+                    elif opt in ("-a", "--addr"):
+                        self.PrinterAddress = arg
+
                     elif opt in ("-l", "--labels"):
                         self.labelfiledirectory = arg
 
@@ -59,32 +65,11 @@ class PrintParameters:
 
     def Display_parameters(self):
         print ("Input spreadsheet    = " + self.wbInputFileName)
-        print ("Output port          = " + self.outputport )
         print ("Label file directory = " + self.labelfiledirectory)
+        print ("Printer Address      = " + self.PrinterAddress)
 
 
-    def ArchiveLocation(LabelDirectory, Lang, Appl, Prtr ):
-        try:
-            sPath = os.path.abspath(LabelDirectory)
-            sPath = os.path.dirname(sPath)
-            sPath = sPath.join(sPath, Lang)
-            sPath = os.path.join(sPath, Appl)
-            sPath = os.path.join(sPath, "Archive")
-            if os.path.exists(sPath):
-                pass
-            else:
-                os.mkdir(sPath)
-            sPath = os.path.join(sPath, Prtr)
-            if os.path.exists(sPath):
-                pass
-            else:
-                os.mkdir(sPath)
-            #print (sPath)
-            return sPath
 
-        except Exception as e:
-            print ("PrintParameters.ArchiveLocation - Path Error" + str(e))
-            quit (-3)
 
     def usage(self):
             print "PrintLabel"
@@ -94,10 +79,10 @@ class PrintParameters:
             print " and printer to use.  It requires a specific directory structure of Label formats, Archive files and Output files"
             print ""
             print "Usage:  PrintLabel --input=<input spreadsheet workbook>"
-            print "                   --PrintOut=<File defined as Local port for printers>"
-            print "                   --labels=<Path to root of directory structure containing labels and Archive files>"
+            print "                   --labels=<Path to root of directory structure containing labels, Output and Archive files>"
+            print "                   --addr=<IP Address of ZPL printer to use to generate bit map>"
             print " example:"
-            print " Python RunTests.py --input=""E:\PythonTestScripts\input.xlsx --PrintOut=c:\Output\Output.txt  --labels=e:\Atf"
+            print " Python RunTests.py --input=""E:\PythonTestScripts\input.xlsx --PrintOut=c:\Output  --labels=e:\Atf"
             print ""
             print "The input spreadsheet workbook must have the following parameter columns defined on sheet1"
             print " |Active	 |Printer	     | dpi |  Application      | Label        | Language           |"
@@ -118,18 +103,13 @@ class PrintParameters:
             print "  These columns are as follows Date of run; time of run; run results (Pass, Fail, Label error or Label not found)"
             print "      if the result is Fail, the next two columns contain the path of the generated output files and the Archive file "
             print "      That it was compared to. If the result is Label Not Found, the column contains the path to the label format"
-            print " "
-            print " The local port file must be set to the same file for all printers in the test run."
             print ""
             print " The labels directory structure is laid out as follows"
             print ""
             print ""
-            print "   /ATF          Top of structure - This is the directory to identify in the '-Labels=' parameter"
+            print "   /ATF          Top of structure"
             print ""
-            print "			/Labels									<- Holds the test labels."
-            print "					/ZPL	<- ZPL Labels"
-            print "					/CPCL   <- CPCL Labels"
-            print "					/EPL	<- ZPL Labels"
+            print "			/Labels									<- Holds the test labels. This is the directory to identify in the '-Labels=' parameter"
             print "	"
             print "			/ZPL	/ZebraDesigner		/Archive	/Printer Names		The Archive subdirectory leads to where the good label"
             print "																		printer commands for each printer are stored for each label."

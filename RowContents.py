@@ -3,7 +3,7 @@ __author__ = 'rvoorheis'
 class RowContents:
 
     ProcessRow = False
-    srow = ""
+    iRow = 1
     Printer = ""
     Dpi = ""
     Application = ""
@@ -16,16 +16,16 @@ class RowContents:
 
         :rtype : object
         """
-        if Sheet.cell('A'+str(RowNum)).value == "Y":
+        if Sheet.cell(RowNum, 1).value == "Y":
+            self.iRow = RowNum
             self.ProcessRow = True
-            self.srow =        str(RowNum)
-            self.Printer =     str(Sheet.cell('B'+ self.srow).value)
-            self.Dpi =         str(Sheet.cell('C'+ self.srow).value)
-            self.Application = str(Sheet.cell('D'+ self.srow).value)
-            self.Label =       str(Sheet.cell('E'+ self.srow).value)
-            self.Language =    str(Sheet.cell('F'+ self.srow).value)
-            #print ('Row ='+self.srow + ' ' + self.Printer +' ' + self.Dpi + ' ' \
-            #      + self.Application + ' ' + self.Label + ' ' + self.Language)
+
+            self.Printer =     str(Sheet.cell(RowNum, 2).value)
+            self.Dpi =         str(Sheet.cell(RowNum, 3).value)
+            self.Application = str(Sheet.cell(RowNum, 4).value)
+            self.Label =       str(Sheet.cell(RowNum, 5).value)
+            self.Language =    str(Sheet.cell(RowNum, 6).value)
+
 
         else:
             self.ProcessRow = False

@@ -9,6 +9,7 @@ class FileLocation:
 
     outputpath = ""     #Path to Output file location
     archivepath = ""    #Path to Archive file location
+    BMPPath = ""        #Path to BMP images
 
     """
     #    Navigates the path to the Archive and Output directories
@@ -17,7 +18,7 @@ class FileLocation:
     #<common>-|--<Language>-<Application>-<Type>-<Printer>
     #         |    \          \              \    \
     #         |     \          \              \    \-Printer Name
-    #         |      \          \              \-Type Archive or Output
+    #         |      \          \              \-Type Archive or Output or BMP
     #         |       \          \
     #         |        \          \-Name of ZebraDesigner Application (ZD, ZDP, ZDX, ZDS or ZDD)
     #         |         \                                               \   \   \    \      \-Driver with Word or other
@@ -38,43 +39,6 @@ class FileLocation:
         return string[0:count]
 
 
-
-    def fixextension(self, spath, language):
-        work = self.left(spath, len(spath)-3)
-        work = work + language
-        return work
-
-
-    def pathend(self, spath, type, prtr, labelname, language):
-        """
-        Pathend - appends the printer name as the final directory name for files
-        :param spath: Static first portion of the path
-        :param prtr:     Printer name
-        :return: Fully qualified directory name for the Archive and Output files
-        """
-        try:
-            spath = os.path.join(spath, type)   #Output or Archive
-            if os.path.exists(spath):           #If directory does not exist,
-                pass
-            else:
-                os.mkdir(spath)                 #Make one
-
-            spath = os.path.join(spath, prtr)
-            if os.path.exists(spath):          #If printer directory does not exist,
-                pass
-            else:
-                os.mkdir(spath)                #Make one
-
-            spath = os.path.join(spath, labelname)    # add the label labelname
-            spath = self.fixextension(spath, language) # fix the output extension name.
-
-            #print (spath)
-            return spath
-
-        except IOError as e:
-            print ("Error finding file location " + str(e) + " " + spath)
-            quit(-8)
-
     def __init__(self, labeldirectory, rc):
         """
         Initially set the static portion of the path
@@ -86,13 +50,33 @@ class FileLocation:
         """
         try:
             spath = os.path.abspath(labeldirectory)   #Absolute path of label directory
-#            spath = os.path.dirname(spath)            #Directory containing Label Directory
-            spath = os.path.join(spath, rc.Language)           #Down to Language Sub directory
-            spath = os.path.join(spath, rc.Application)         #Down to Application Sub directory
+#
+            spath      = self.AddDir(str(spath), rc.Language)           #Down to Language Sub directory
+            spath      = self.AddDir(str(spath), rc.Application)         #Down to Application Sub directory
+            spath      = self.AddDir(str(spath), rc.Printer)              #Down to the printer Sub Directory
+            self.outputpath = self.AddDir(str(spath), "Output")                #Output Path
 
-            self.outputpath = self.pathend(spath, "Output", rc.Printer, rc.Label, rc.Language)   #add Output branch
-            self.archivepath = self.pathend(spath, "Archive", rc.Printer, rc.Label, rc.Language) #Insert Archive Branch
+            self.archivepath = self.AddDir(str(spath), "Archive")              #Archive Path
 
-        except Exception:
-            print ("Error finding archive file location " + labeldirectory)
+            self.BMPPath = self.AddDir(str(spath), "BMP")                  # BMP Path
+
+
+        except Exception as e:
+            print ("Error finding archive file location " + labeldirectory + " " + str(e))
             quit(-7)
+
+    def AddDir (self, FirstPart, SecondPart):
+
+        try:
+            spath = os.path.abspath(FirstPart)
+            spath = os.path.join (spath, SecondPart)
+            if os.path.exists(spath):  # If Archive directory does not exist,
+                pass
+            else:
+                os.mkdir(spath)  # Make one
+
+            return spath
+
+        except Exception as e:
+            print ("Error finding Creating directory " + labeldirectory + " "+str(e))
+            quit(-9)

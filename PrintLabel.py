@@ -1,3 +1,5 @@
+from MakeBMP import MakeBMP
+
 __author__ = 'rvoorheis'
 # -*- encoding: UTF-8 -*-
 
@@ -16,13 +18,12 @@ import time as _time
 class PrintLabel:
 
     LabelFileDirectory = ""         # Root file directory of label formats
-    outputport = ""                 # Output port used to capture output
 
     def __init__(self, ws, parameters):
         self.LabelFileDirectory = parameters.labelfiledirectory
-        self.outputport = parameters.outputport
 
-    def printlabel(self, rc, ws):
+
+    def printlabel(self, rc, ws, PtrAddr):
         """
         Print label as specified in the row of the input Workbook
         Completes Output and Archive file path names
@@ -32,18 +33,32 @@ class PrintLabel:
 
         try:
             TF = TempFile.TempFile()
-            LabelFileName = os.path.join(os.path.join(self.LabelFileDirectory, "Labels", rc.Language), rc.Label)
+            LabelFileName = os.path.join(self.LabelFileDirectory, rc.Label)
             if self.FileExists(LabelFileName):
 
-                tfilename = TF.writetempfile(rc, self.outputport, LabelFileName)     # Use the row contents to build the Temp file
-
-                zdp = self.LaunchLDA(rc.Application, tfilename)      # int the requested label
-                                                                # tablish full qualified name of Archive and Output files
+                                                # establish full qualified name of Archive and Output files
                 files = FileLocation.FileLocation(self.LabelFileDirectory, rc)
+
+                OutputFileName = files.outputpath + "\\" + files.left(rc.Label, len(rc.Label)-4) + ".prn"
+           #     print ("Output File - " + OutputFileName)
+
+                BMPFileName = files.BMPPath + "\\" + files.left(rc.Label, len(rc.Label)-4) + ".bmp"
+
+                if self.FileExists(OutputFileName):
+                    os.remove(OutputFileName)
+
+                tfilename = TF.writetempfile(rc, OutputFileName, LabelFileName)     # Use the row contents to build the Temp file
+
+                zdp = self.LaunchLDA(rc.Application, tfilename)      # print the requested label via ZebraDesigner app
+
+                while (not self.FileExists(OutputFileName)):        # Wait until we have the output file (ZPL)
+                    time.sleep(1)
                                                                 #Determine test results
-                result = self.CheckOutput(self.outputport, files.archivepath, files.outputpath, zdp)
+                result = self.CheckOutput( files.outputpath, files.archivepath, zdp)
                 self.sheetoutput(rc, result, ws, files.outputpath, files.archivepath)    #Report test results
-                #print (rc.Printer + ' ' + rc.Language + ' ' + rc.Label + ' ' + rc.Dpi + ' ' + result)
+                #print(rc.Printer + ' ' + rc.Language + ' ' + rc.Label + ' ' + rc.Dpi + ' ' + result)
+
+                MakeBMP(self, OutputFileName, BMPFileName, PtrAddr)      # send the ZPL to a printer to generate the .bmp image
             else:
                 self.sheetoutput(rc, "Label File Not Found", ws, LabelFileName,"")
 
@@ -76,10 +91,10 @@ class PrintLabel:
             quit (-14)
 
     def path_pre(self):
-        if os.environ.get('ProgramFiles(x86)') is None:
-            return os.environ.get('ProgramFiles')
+        if os.environ.get('Program Files(x86)') is None:
+            return os.environ.get('Program Files')
         else:
-            return os.environ.get('ProgramFiles(x86)')
+            return os.environ.get('Program Files(x86)')
 
     def kill_app(self, zdp):
         try:
@@ -105,16 +120,17 @@ class PrintLabel:
         """
         try:
 
-            spath = os.path.join(self.path_pre(), "Zebra Technologies")
+            spath = os.path.join(os.environ.get("PROGRAMFILES"), "Zebra Technologies")
 
             if (app_name == "ZebraDesigner"):
                 spath = os.path.join(spath, "ZebraDesigner 2", "bin", "Design.exe")
             elif (app_name == "ZebraDesigner Pro"):
-                spath = os.path.join(spath, "ZebraDesigner Pro 2", "bin", "Design.exe")
-            elif (app_name == "ZebraDesigner for XML"):
-                spath = os.path.join(spath, "ZebraDesigner XML 2", "bin", "Designde.exe")
-            elif (app_name == "ZebraDesigner for SAP"):
-                spath = os.path.join(spath, "ZebraDesigner for mySAP Business Suite 2", "bin", "Designde.exe")
+                spath = os.path.join(spath , "ZebraDesigner Pro 2", "bin", "Design.exe")
+            elif (app_name == "NiceLabelDesigner.exe"):
+                spath = os.path.join(os.environ.get("PROGRAMW6432"),"NiceLabel" ,
+                                     "NiceLabel 2017" , "bin.net" , "NiceLabelDesigner.exe");
+
+            assert (len(spath)> 15)
 
             return spath
         except Exception as e:
@@ -130,18 +146,18 @@ class PrintLabel:
         :return: nothing returned
         """
         try:
-            ws.cell('G' + rc.srow).value = date.today().strftime('%x')
-            ws.cell('H' + rc.srow).value = time.strftime('%X')
-            ws.cell('I' + rc.srow).value = Result
+            ws.cell(rc.iRow, 7).value = date.today().strftime('%x')
+            ws.cell(rc.iRow, 8).value = time.strftime('%X')
+            ws.cell(rc.iRow, 8).value = Result
             if Result == "New":
-                ws.cell('J' + rc.srow).value = ''
-                ws.cell('K' + rc.srow).value = archive
+                ws.cell(rc.iRow, 10).value = ''
+                ws.cell(rc.iRow, 11).value = archive
             elif Result == "Fail":
-                ws.cell('J' + rc.srow).value = newoutput
-                ws.cell('K' + rc.srow).value = archive
+                ws.cell(rc.iRow, 10).value = newoutput
+                ws.cell(rc.iRow, 11).value = archive
             else:
-                ws.cell('J' + rc.srow).value = ''
-                ws.cell('K' + rc.srow).value = ''
+                ws.cell(rc.iRow, 10).value = ''
+                ws.cell(rc.iRow, 11).value = ''
 
         except Exception as e:
             print ("PrintLabel.sheetoutput Error - " + str(e))
@@ -149,13 +165,14 @@ class PrintLabel:
 
 
     def FileExists(self, filename):
+        # type: (object, object) -> object
         """
         Checks to see if file exists.
         :param filename: Fully qualified file name of to check for
         :return: result:  Logical True or False whether or not the specified file exists
         """
         try:
-            f = open(filename, 'r')      #open the file
+            open(filename, 'r')      #open the file
             return (True)
 
         except IOError as e:
@@ -190,33 +207,27 @@ class PrintLabel:
             return (result)
 
 
-    def CheckOutput(self, newoutput, archivefn, outputfn, zdp):
+    def CheckOutput(self, outputfn, archivefn, zdp):
         """
         See if the newly generated output matches the "good" output archive.
-        :param newoutput: - Newly generated output file
+        :param outputfn: - Newly generated output file
         :param archivefn: - Full file name of Archive file
-        :param outputfn:  - Full path to where to store Output file if in error
         :return: result   - 4 Character description of result of test, suitable for inserting in
                             output spreadsheet or error log
         """
         try:
 
             result = ""
-            if self.WaitForFile(newoutput):                  #Wait for output file to be created
+            if self.WaitForFile(outputfn):                  #Wait for output file to be created
                 if self.FileExists(archivefn):
-                    if (filecmp.cmp(newoutput, archivefn)):  #Pass -Output matches Archive
+                    if (filecmp.cmp(outputfn, archivefn)):  #Pass -Output matches Archive
                         result = "Pass"
-                        os.remove(newoutput)
                     else:
                         result = "Fail"                     #Fail - Output does not match
-                        sh = shutil
-                        sh.move(newoutput, outputfn)        #Save output for review
-                        sh = 0
                 else:                           #No Archive file exists
                     result = "New"
                     sh = shutil
-                    #sh.copyfile(NewOutput, Archive)  #Create Archive file
-                    sh.move(newoutput, archivefn)
+                    sh.move(outputfn, archivefn)
                     sh = 0
             else:                                               #Output file never created
                 result = "Label Err"
