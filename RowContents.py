@@ -16,10 +16,14 @@ class RowContents:
 
         :rtype : object
         """
-        if Sheet.cell(RowNum, 1).value == "Y":
+        Indicator = Sheet.cell(RowNum, 1).value
+
+        if Indicator in("Y", "M"):
+
             self.iRow = RowNum
             self.ProcessRow = True
 
+            self.Function =    str(Sheet.cell(RowNum, 1).value)
             self.Printer =     str(Sheet.cell(RowNum, 2).value)
             self.Dpi =         str(Sheet.cell(RowNum, 3).value)
             self.Application = str(Sheet.cell(RowNum, 4).value)

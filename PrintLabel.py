@@ -18,6 +18,7 @@ import time as _time
 class PrintLabel:
 
     LabelFileDirectory = ""         # Root file directory of label formats
+    TempOut = "C:\\Output\\Output.prn"
 
     def __init__(self, ws, parameters):
         self.LabelFileDirectory = parameters.labelfiledirectory
@@ -33,38 +34,47 @@ class PrintLabel:
 
         try:
             TF = TempFile.TempFile()
+            files = FileLocation.FileLocation(self.LabelFileDirectory, rc)
+
             LabelFileName = os.path.join(self.LabelFileDirectory, rc.Label)
-            if self.FileExists(LabelFileName):
+            OutputFileName = files.outputpath + "\\" + files.left(rc.Label, len(rc.Label) - 4) + ".prn"
+            ArchiveFileName = files.archivepath + "\\" + files.left(rc.Label, len(rc.Label) - 4) + ".prn"
+            BMPFileName = files.BMPPath + "\\" + files.left(rc.Label, len(rc.Label) - 4) + ".bmp"
 
-                                                # establish full qualified name of Archive and Output files
-                files = FileLocation.FileLocation(self.LabelFileDirectory, rc)
-
-                OutputFileName = files.outputpath + "\\" + files.left(rc.Label, len(rc.Label)-4) + ".prn"
-           #     print ("Output File - " + OutputFileName)
-
-                BMPFileName = files.BMPPath + "\\" + files.left(rc.Label, len(rc.Label)-4) + ".bmp"
-
+            if rc.Function == "M":
                 if self.FileExists(OutputFileName):
-                    os.remove(OutputFileName)
-
-                tfilename = TF.writetempfile(rc, OutputFileName, LabelFileName)     # Use the row contents to build the Temp file
-
-                zdp = self.LaunchLDA(rc.Application, tfilename)      # print the requested label via ZebraDesigner app
-
-                while (not self.FileExists(OutputFileName)):        # Wait until we have the output file (ZPL)
-                    time.sleep(1)
-                                                                #Determine test results
-                result = self.CheckOutput( files.outputpath, files.archivepath, zdp)
-                self.sheetoutput(rc, result, ws, files.outputpath, files.archivepath)    #Report test results
-                #print(rc.Printer + ' ' + rc.Language + ' ' + rc.Label + ' ' + rc.Dpi + ' ' + result)
-
-                MakeBMP(self, OutputFileName, BMPFileName, PtrAddr)      # send the ZPL to a printer to generate the .bmp image
+                    MakeBMP(self, OutputFileName, BMPFileName,
+                            PtrAddr)  # send the ZPL to a printer to generate the .bmp image
+                    self.sheetoutput(rc, ".bmp File Created", ws, BMPFileName, "")
+                else:
+                    self.sheetoutput(rc, "ZPL File not Found", ws, OutputFileName, "")
             else:
-                self.sheetoutput(rc, "Label File Not Found", ws, LabelFileName,"")
+                if self.FileExists(LabelFileName):
+                    if self.FileExists(self.TempOut):
+                        os.remove(self.TempOut)
+                    tfilename = TF.writetempfile(rc, self.TempOut, LabelFileName)     # Use the row contents to build the Temp file
+                    zdp = self.LaunchLDA(rc.Application, tfilename)      # print the requested label via ZebraDesigner app
+
+                    if self.WaitForFile(self.TempOut):
+                        #shutil.copy(self.TempOut, OutputFileName)
+                        shutil.copyfile(self.TempOut, OutputFileName)
+                        if self.WaitForFile(OutputFileName):  # Determine test results
+                            result = self.CheckOutput(OutputFileName, ArchiveFileName, zdp)
+                            self.sheetoutput(rc, result, ws, files.outputpath, files.archivepath)  # Report test results
+                            # print(rc.Printer + ' ' + rc.Language + ' ' + rc.Label + ' ' + rc.Dpi + ' ' + result)
+
+                            MakeBMP(self, OutputFileName, BMPFileName,
+                                    PtrAddr)  # send the ZPL to a printer to generate the .bmp image
+                        else:
+                            self.sheetoutput(rc, "ZPL File not copied", ws, LabelFileName, "")
+                    else:
+                        self.sheetoutput(rc, "ZPL File not created", ws, LabelFileName, "")
+                else:
+                    self.sheetoutput(rc, "Label File Not Found", ws, LabelFileName,"")
 
         except Exception as e:
             print ("PrintLabel.printlabel error " + str(e))
-            quit (-6)
+            quit(-6)
 
     def LaunchLDA(self, appName, jobFile):
         """
@@ -148,7 +158,8 @@ class PrintLabel:
         try:
             ws.cell(rc.iRow, 7).value = date.today().strftime('%x')
             ws.cell(rc.iRow, 8).value = time.strftime('%X')
-            ws.cell(rc.iRow, 8).value = Result
+            ws.cell(rc.iRow, 9).value = Result
+            ws.cell(rc.iRow, 10).value = newoutput
             if Result == "New":
                 ws.cell(rc.iRow, 10).value = ''
                 ws.cell(rc.iRow, 11).value = archive
@@ -156,7 +167,6 @@ class PrintLabel:
                 ws.cell(rc.iRow, 10).value = newoutput
                 ws.cell(rc.iRow, 11).value = archive
             else:
-                ws.cell(rc.iRow, 10).value = ''
                 ws.cell(rc.iRow, 11).value = ''
 
         except Exception as e:
@@ -195,8 +205,9 @@ class PrintLabel:
                     #print(filename + " Found")
                     result = True
                     break
-                result = False
-                #print (filename + " Never found")
+                else:
+                    result = False
+                    #print (filename + " Never found")
 
         except IOError as e:
             print "IO Error" + str(e)+ " "+os.strerror
@@ -226,9 +237,7 @@ class PrintLabel:
                         result = "Fail"                     #Fail - Output does not match
                 else:                           #No Archive file exists
                     result = "New"
-                    sh = shutil
-                    sh.move(outputfn, archivefn)
-                    sh = 0
+                    shutil.copy(outputfn, archivefn)
             else:                                               #Output file never created
                 result = "Label Err"
                 self.kill_app(zdp)

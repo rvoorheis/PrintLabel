@@ -1,5 +1,5 @@
-LABEL "C:\\Users\\rvoorheis\\OneDrive - Zebra Technologies\Label Work\\DriverTestData\InternalBarCodes.lbl", "ZDesigner ZD500-203dpi ZPL"
-PRINTER "ZDesigner ZD500-203dpi ZPL"
-PORT "C:\Users\rvoorheis\OneDrive - Zebra Technologies\Label Work\DriverTestData\ZPL\ZebraDesigner Pro\ZDesigner ZD500-203dpi ZPL\Output\InternalBarCodes.prn"
+LABEL "C:\DriverTestData\TF_1_Zebra_0.lbl", "ZDesigner ZD500R-203dpi ZPL"
+PRINTER "ZDesigner ZD500R-203dpi ZPL"
+PORT "C:\Output\Output.prn"
 PRINT 1
 QUIT

@@ -70,7 +70,7 @@ class FileLocation:
         try:
             spath = os.path.abspath(FirstPart)
             spath = os.path.join (spath, SecondPart)
-            if os.path.exists(spath):  # If Archive directory does not exist,
+            if os.path.exists(spath):  # If Archive directory does exists,
                 pass
             else:
                 os.mkdir(spath)  # Make one
