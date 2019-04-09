@@ -45,9 +45,9 @@ class PrintLabel:
                 if self.FileExists(OutputFileName):
                     MakeBMP(self, OutputFileName, BMPFileName,
                             PtrAddr)  # send the ZPL to a printer to generate the .bmp image
-                    self.sheetoutput(rc, ".bmp File Created", ws, BMPFileName, "")
+                    self.sheetoutput(rc, ".bmp File Created", ws, "", "", BMPFileName)
                 else:
-                    self.sheetoutput(rc, "ZPL File not Found", ws, OutputFileName, "")
+                    self.sheetoutput(rc, "ZPL File not Found", ws, OutputFileName, "","")
             else:
                 if self.FileExists(LabelFileName):
                     if self.FileExists(self.TempOut):
@@ -60,17 +60,19 @@ class PrintLabel:
                         shutil.copyfile(self.TempOut, OutputFileName)
                         if self.WaitForFile(OutputFileName):  # Determine test results
                             result = self.CheckOutput(OutputFileName, ArchiveFileName, zdp)
-                            self.sheetoutput(rc, result, ws, files.outputpath, files.archivepath)  # Report test results
+                            if MakeBMP(self, OutputFileName, BMPFileName,
+                                       PtrAddr): # send the ZPL to a printer to generate the .bmp image
+                                result = result + " - BMP File not created!"
+                            self.sheetoutput(rc, result, ws, files.outputpath, files.archivepath, BMPFileName)  # Report test results
                             # print(rc.Printer + ' ' + rc.Language + ' ' + rc.Label + ' ' + rc.Dpi + ' ' + result)
 
-                            MakeBMP(self, OutputFileName, BMPFileName,
-                                    PtrAddr)  # send the ZPL to a printer to generate the .bmp image
+
                         else:
-                            self.sheetoutput(rc, "ZPL File not copied", ws, LabelFileName, "")
+                            self.sheetoutput(rc, "ZPL File not copied", ws, LabelFileName, "", "")
                     else:
-                        self.sheetoutput(rc, "ZPL File not created", ws, LabelFileName, "")
+                        self.sheetoutput(rc, "ZPL File not created", ws, LabelFileName, "", "")
                 else:
-                    self.sheetoutput(rc, "Label File Not Found", ws, LabelFileName,"")
+                    self.sheetoutput(rc, "Label File Not Found", ws, LabelFileName,"", "")
 
         except Exception as e:
             print ("PrintLabel.printlabel error " + str(e))
@@ -147,7 +149,7 @@ class PrintLabel:
             print ("PrintLabel.appl_path Error - " + str(e))
             quit (-10)
 
-    def sheetoutput(self, rc, Result, ws, newoutput, archive):
+    def sheetoutput(self, rc, Result, ws, newoutput, archive, bmp):
         """
         Create a line of output spreadsheet result detail
         :param rc: input Row contents object
@@ -168,6 +170,8 @@ class PrintLabel:
                 ws.cell(rc.iRow, 11).value = archive
             else:
                 ws.cell(rc.iRow, 11).value = ''
+
+            ws.cell(rc.iRow, 12).value = bmp
 
         except Exception as e:
             print ("PrintLabel.sheetoutput Error - " + str(e))
