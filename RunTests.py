@@ -35,7 +35,7 @@ def main(argv):
 
         ToDo = 0
         RowCounter = 0
-        LastRow = ws.max_row
+        LastRow = ws.max_row + 1
 
         for row in range(2, LastRow):
             rc = RowContents.RowContents(ws, row)
@@ -45,7 +45,7 @@ def main(argv):
         print("reading rows")
         for row in range(2, LastRow):
 
-            assert row < LastRow
+            assert row <= LastRow
 
             rc = RowContents.RowContents(ws, row)
             if rc.ProcessRow:
