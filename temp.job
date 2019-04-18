@@ -1,5 +1,5 @@
-LABEL "C:\DriverTestData\Lines and Boxes.lbl", "ZDesigner ZD500-203dpi ZPL"
-PRINTER "ZDesigner ZD500-203dpi ZPL"
+LABEL "C:\DriverTestData\TF_4_Zebra_C_Rotations.lbl", "ZDesigner ZT410-600dpi ZPL"
+PRINTER "ZDesigner ZT410-600dpi ZPL"
 PORT "C:\Output\Output.prn"
 PRINT 1
 QUIT

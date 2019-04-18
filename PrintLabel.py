@@ -23,14 +23,12 @@ class PrintLabel:
     def __init__(self, ws, parameters):
         self.LabelFileDirectory = parameters.labelfiledirectory
 
-
-    def printlabel(self, rc, ws, PtrAddr):
-        """
-        Print label as specified in the row of the input Workbook
-        Completes Output and Archive file path names
-        :param rc: Row contents object defining characteristics of the test
-        :return:
-        """
+    def printlabel(self, rc, ws):
+#        Print label as specified in the row of the input Workbook
+#        Completes Output and Archive file path names
+#        :param rc: Row contents object defining characteristics of the test
+#        :return:
+#        """
 
         try:
             TF = TempFile.TempFile()
@@ -44,7 +42,7 @@ class PrintLabel:
             if rc.Function == "M":
                 if self.FileExists(OutputFileName):
                     MakeBMP(self, OutputFileName, BMPFileName,
-                            PtrAddr)  # send the ZPL to a printer to generate the .bmp image
+                            rc.IPAddress)  # send the ZPL to a printer to generate the .bmp image
                     self.sheetoutput(rc, ".bmp File Created", ws, "", "", BMPFileName)
                 else:
                     self.sheetoutput(rc, "ZPL File not Found", ws, OutputFileName, "","")
@@ -61,7 +59,7 @@ class PrintLabel:
                         if self.WaitForFile(OutputFileName):  # Determine test results
                             result = self.CheckOutput(OutputFileName, ArchiveFileName, zdp)
                             if MakeBMP(self, OutputFileName, BMPFileName,
-                                       PtrAddr): # send the ZPL to a printer to generate the .bmp image
+                                       rc.IPAddress): # send the ZPL to a printer to generate the .bmp image
                                 result = result + " - BMP File not created!"
                             self.sheetoutput(rc, result, ws, files.outputpath, files.archivepath, BMPFileName)  # Report test results
                             # print(rc.Printer + ' ' + rc.Language + ' ' + rc.Label + ' ' + rc.Dpi + ' ' + result)
@@ -158,20 +156,20 @@ class PrintLabel:
         :return: nothing returned
         """
         try:
-            ws.cell(rc.iRow, 7).value = date.today().strftime('%x')
-            ws.cell(rc.iRow, 8).value = time.strftime('%X')
-            ws.cell(rc.iRow, 9).value = Result
-            ws.cell(rc.iRow, 10).value = newoutput
+            ws.cell(rc.iRow, 8).value = date.today().strftime('%x')
+            ws.cell(rc.iRow, 9).value = time.strftime('%X')
+            ws.cell(rc.iRow, 10).value = Result
+            ws.cell(rc.iRow, 11).value = newoutput
             if Result == "New":
-                ws.cell(rc.iRow, 10).value = ''
-                ws.cell(rc.iRow, 11).value = archive
-            elif Result == "Fail":
-                ws.cell(rc.iRow, 10).value = newoutput
-                ws.cell(rc.iRow, 11).value = archive
-            else:
                 ws.cell(rc.iRow, 11).value = ''
+                ws.cell(rc.iRow, 12).value = archive
+            elif Result == "Fail":
+                ws.cell(rc.iRow, 11).value = newoutput
+                ws.cell(rc.iRow, 12).value = archive
+            else:
+                ws.cell(rc.iRow, 12).value = ''
 
-            ws.cell(rc.iRow, 12).value = bmp
+            ws.cell(rc.iRow, 13).value = bmp
 
         except Exception as e:
             print ("PrintLabel.sheetoutput Error - " + str(e))

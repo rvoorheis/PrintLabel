@@ -12,19 +12,17 @@ class PrintParameters:
 #    wbInputFileName = "E:\\PythonTestScripts\\input.xlsx"   #Name of input spreadsheet
 #
 #    labelfiledirectory = "E:\\ATF\\Labels"          #Directory name containing Label format
-#    iString = "123.234.112.223"
+
 
 
     wbInputFileName = ""  # Name of input spreadsheet
 
     labelfiledirectory = ""  # Directory name containing Label format
 
-    PrinterAddress = ""       # IP address of ZPL printer to be used to generate image
-
     def __init__(self, argv):
 
         try:
-            opts, args = getopt.getopt(sys.argv[1:], 'hi:l:a:d', ['help', 'input=', 'labels=', 'addr=', 'debug'])
+            opts, args = getopt.getopt(sys.argv[1:], 'hi:l:a:d', ['help', 'input=', 'labels=', 'debug'])
 
         except getopt.GetoptError as e:
             print("GetoptError " + str(e))
@@ -43,8 +41,6 @@ class PrintParameters:
                         _debug = True
                     elif opt in ("-i", "--input"):
                         self.wbInputFileName = arg
-                    elif opt in ("-a", "--addr"):
-                        self.PrinterAddress = arg
 
                     elif opt in ("-l", "--labels"):
                         self.labelfiledirectory = arg
@@ -66,10 +62,6 @@ class PrintParameters:
     def Display_parameters(self):
         print ("Input spreadsheet    = " + self.wbInputFileName)
         print ("Label file directory = " + self.labelfiledirectory)
-        print ("Printer Address      = " + self.PrinterAddress)
-
-
-
 
     def usage(self):
             print "PrintLabel"
@@ -80,14 +72,14 @@ class PrintParameters:
             print ""
             print "Usage:  PrintLabel --input=<input spreadsheet workbook>"
             print "                   --labels=<Path to root of directory structure containing labels, Output and Archive files>"
-            print "                   --addr=<IP Address of ZPL printer to use to generate bit map>"
+            print " "
             print " example:"
             print " Python RunTests.py --input=""E:\PythonTestScripts\input.xlsx --PrintOut=c:\Output  --labels=e:\Atf"
             print ""
             print "The input spreadsheet workbook must have the following parameter columns defined on sheet1"
-            print " |Active	 |Printer	     | dpi |  Application      | Label        | Language           |"
-            print " |--------|---------------|-----|-------------------|--------------|--------------------|"
-            print " |<Y or N>|<Printer Name> |<dpi>|<Application Name> | <Label name> | <Printer Language> |"
+            print " |Active	 |Printer	     | dpi | Ip Addr       |  Application      | Label        | Language           |"
+            print " |--------|---------------|-----|---------------|-------------------|--------------|--------------------|"
+            print " |<Y or N>|<Printer Name> |<dpi>|<IP Address>   |<Application Name> | <Label name> | <Printer Language> |"
             print " "
             print " Each row defines a label a label design application and printer"
             print " The Active column contains a Y or N flag indicating whether to process that row"
@@ -95,6 +87,7 @@ class PrintParameters:
             print "     This printer should have the output directed to a local port and bidirectional input turned off"
             print "     For ZPL printers, the parameters should be set to 'Use Printer Settings'"
             print "  The dpi column specifies the print density of the printer.  This is informational and does not affect processing"
+            print "  The IP Addr column specified the address of the printer to use to generate a BMP image."
             print "  The Application column specifies the ZebraDesigner application to use to print the label format"
             print "  The Label column identifies the label format to be printed"
             print "  The Language column identifies the printer language.  It should match the printer and used to organize the output"

@@ -18,11 +18,6 @@ def main(argv):
     try:
 
         parms = PrintParameters.PrintParameters(argv)
-        if (is_valid_ipv4_address(parms.PrinterAddress)):
-            PrtAddr = parms.PrinterAddress
-        else:
-            print ("RunTests: Invalid IP Address provided. " + parms.PrinterAddress)
-            quit(-9)
 
         parms.Display_parameters()
 
@@ -50,7 +45,7 @@ def main(argv):
             rc = RowContents.RowContents(ws, row)
             if rc.ProcessRow:
                 # print (str(row-1) + " of " + str(counter))
-                pl.printlabel(rc, ws, PrtAddr)
+                pl.printlabel(rc, ws)
                 RowCounter = RowCounter + 1
                 pb.update_progress(float(RowCounter), float(ToDo), str(rc.Label))
                 wb.save(parms.wbInputFileName)
@@ -71,18 +66,6 @@ def main(argv):
     except Warning as e:
         print("Warning " + str(e))
         quit(-1)
-
-def is_valid_ipv4_address(address):
-    try:
-        socket.inet_pton(socket.AF_INET, address)
-    except AttributeError:  # no inet_pton here, sorry
-        try:
-            socket.inet_aton(address)
-        except socket.error:
-            return False
-        return address.count('.') == 3
-    except socket.error:  # not a valid address
-        return False
 
     return True
 

@@ -6,6 +6,7 @@ class RowContents:
     iRow = 1
     Printer = ""
     Dpi = ""
+    IpAddress = ""
     Application = ""
     Label = ""
     Language = ""
@@ -26,9 +27,10 @@ class RowContents:
             self.Function =    str(Sheet.cell(RowNum, 1).value)
             self.Printer =     str(Sheet.cell(RowNum, 2).value)
             self.Dpi =         str(Sheet.cell(RowNum, 3).value)
-            self.Application = str(Sheet.cell(RowNum, 4).value)
-            self.Label =       str(Sheet.cell(RowNum, 5).value)
-            self.Language =    str(Sheet.cell(RowNum, 6).value)
+            self.IPAddress =      str(Sheet.cell(RowNum, 4).value)
+            self.Application = str(Sheet.cell(RowNum, 5).value)
+            self.Label =       str(Sheet.cell(RowNum, 6).value)
+            self.Language =    str(Sheet.cell(RowNum, 7).value)
 
 
         else:
